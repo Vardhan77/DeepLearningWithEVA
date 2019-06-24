@@ -4,6 +4,7 @@ We have considered many many points in our last 4 projects. Some of these we hav
 
 How many layers?
 The number of layers depends upon the receptive field.
+
 MaxPooling,
 1x1 Convolutions,
 3x3 Convolutions,
