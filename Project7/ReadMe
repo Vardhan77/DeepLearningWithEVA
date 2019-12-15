@@ -1,0 +1,13 @@
+Results
+
+Train
+
+Score =  [0.2631824646568298, 0.9369200000190735]
+
+Balanced Accuracy = 93.84%, Accuracy = 93.84%
+
+Validation 
+
+Score =  [0.5835708273649216, 0.8553]
+
+Balanced Accuracy = 84.09%, Accuracy = 84.09%
