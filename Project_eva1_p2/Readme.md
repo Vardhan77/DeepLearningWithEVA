@@ -1,4 +1,4 @@
 Training and validation charts on the ReadMe page.
 
-![](trainval.png)
+![](trainval1.png)
 
