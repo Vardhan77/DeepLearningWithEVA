@@ -7,6 +7,7 @@ Copy the Video and Code link to this assignment.
 Done!
   
  Write Up -> sol.md
+ [sol.md](https://www.google.com)
   
 Video Link -> https://youtu.be/kJgPeYgygp8
 
