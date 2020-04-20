@@ -15,4 +15,6 @@ You are using Conv Network (very very simple one) on your sand (so you can use M
 You have understood the problem and actually have tried to solve this problem. 
  
  Write Up -> sol.md
+ 
+ 
 Video Link -> https://youtu.be/kJgPeYgygp8
