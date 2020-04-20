@@ -6,8 +6,7 @@ Upload Video on YouTube, upload your code to GitHub along with Google-Colab code
 Copy the Video and Code link to this assignment. 
 Done!
   
- Write Up -> sol.md
- [sol.md](https://www.google.com)
+ Write Up -> [sol.md](https://github.com/Vardhan77/DeepLearningWithEVA/blob/master/ProjectEndgame/Sol.md)
   
 Video Link -> https://youtu.be/kJgPeYgygp8
 
