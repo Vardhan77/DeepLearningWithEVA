@@ -29,32 +29,32 @@ class ReplayBuffer(object):
 
   def sample(self, batch_size):
     ind = np.random.randint(0, len(self.storage), size=batch_size)
-    batch_states_img, batch_states_ori1, batch_states_ori2, batch_states_dis,\
-    batch_next_states_img, batch_next_states_ori1, batch_next_states_ori2, batch_next_states_dis,\
+    batch_image, batch_orient1, batch_orient2, batch_disp,\
+    batch_next, batch_next_orient1, batch_next_orient2, batch_next_disp,\
     batch_actions, batch_rewards, batch_dones = [], [], [], [], [], [], [], [], [], [], []
 
     for i in ind:
-      state_img,state_ori1,state_ori2,state_dis,\
+      state_img,orient1,orient2,state_dis,\
       next_state_img,next_state_ori1,next_state_ori2,next_state_dis,\
       action, reward, done = self.storage[i]
 
-      batch_states_img.append(np.array(state_img, copy=False))
-      batch_states_ori1.append(np.array(state_ori1, copy=False))
-      batch_states_ori2.append(np.array(state_ori2, copy=False))
-      batch_states_dis.append(np.array(state_dis, copy=False))
+      batch_image.append(np.array(state_img, copy=False))
+      batch_orient1.append(np.array(orient1, copy=False))
+      batch_orient2.append(np.array(orient2, copy=False))
+      batch_disp.append(np.array(state_dis, copy=False))
 
-      batch_next_states_img.append(np.array(next_state_img, copy=False))
-      batch_next_states_ori1.append(np.array(next_state_ori1, copy=False))
-      batch_next_states_ori2.append(np.array(next_state_ori2, copy=False))
-      batch_next_states_dis.append(np.array(next_state_dis, copy=False))
+      batch_next.append(np.array(next_state_img, copy=False))
+      batch_next_orient1.append(np.array(next_state_ori1, copy=False))
+      batch_next_orient2.append(np.array(next_state_ori2, copy=False))
+      batch_next_disp.append(np.array(next_state_dis, copy=False))
 
 
       batch_actions.append(action)
       batch_rewards.append(np.array(reward, copy=False))
       batch_dones.append(np.array(done, copy=False))
 
-    return batch_states_img, batch_states_ori1, batch_states_ori2, batch_states_dis,\
-    batch_next_states_img, batch_next_states_ori1, batch_next_states_ori2, batch_next_states_dis,\
+    return batch_image, batch_orient1, batch_orient2, batch_disp,\
+    batch_next, batch_next_orient1, batch_next_orient2, batch_next_disp,\
     batch_actions, np.array(batch_rewards).reshape(-1, 1), np.array(batch_dones).reshape(-1, 1)
 
 class Actor(nn.Module):
@@ -108,12 +108,12 @@ class Critic(nn.Module):
     self.fc6 = nn.Linear(300, 1)
 
 
-  def forward(self, state_img, state_ori1, state_ori2, state_dis, action):
+  def forward(self, state_img, orient1, orient2, state_dis, action):
     x1 = F.relu(F.max_pool2d(self.conv1(state_img), 2))
     x1 = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x1)), 2))
     x1 = x1.reshape(x1.size(0), -1) #2420
     x1 = F.relu(self.fc1(x1)) # 5
-    x1 = torch.cat([x1, state_ori1, state_ori2, state_dis, action], 1) # 9
+    x1 = torch.cat([x1, orient1, orient2, state_dis, action], 1) # 9
     x1 = F.relu(self.fc2(x1)) #300
     x1 = F.dropout(x1, training=self.training)
     x1 = self.fc3(x1) # 1
@@ -122,19 +122,19 @@ class Critic(nn.Module):
     x2 = F.relu(F.max_pool2d(self.conv4_drop(self.conv4(x2)), 2))
     x2 = x2.reshape(x2.size(0), -1) # 2420
     x2 = F.relu(self.fc4(x2)) # 5
-    x2 = torch.cat([x2, state_ori1, state_ori2, state_dis, action], 1) # 9
+    x2 = torch.cat([x2, orient1, orient2, state_dis, action], 1) # 9
     x2 = F.relu(self.fc5(x2)) #300
     x2 = F.dropout(x2, training=self.training)
     x2 = self.fc6(x2) # 1
 
     return x1, x2
 
-  def Q1(self, state_img, state_ori1, state_ori2, state_dis, action):
+  def Q1(self, state_img, orient1, orient2, state_dis, action):
     x1 = F.relu(F.max_pool2d(self.conv1(state_img), 2))
     x1 = F.relu(F.max_pool2d(self.conv2_drop(self.conv2(x1)), 2))
     x1 = x1.reshape(x1.size(0), -1) #2420
     x1 = F.relu(self.fc1(x1)) # 5
-    x1 = torch.cat([x1, state_ori1, state_ori2, state_dis, action], 1) # 9
+    x1 = torch.cat([x1, orient1, orient2, state_dis, action], 1) # 9
     x1 = F.relu(self.fc2(x1)) #300
     x1 = F.dropout(x1, training=self.training)
     x1 = self.fc3(x1) # 3
@@ -154,35 +154,35 @@ class TD3(object):
     self.critic_optimizer = torch.optim.Adam(self.critic.parameters())
     self.max_action = max_action
 
-  def select_action(self, state_img,state_ori1,state_ori2,state_dis):
+  def select_action(self, state_img,orient1,orient2,state_dis):
     state_img = torch.Tensor(np.expand_dims(state_img, axis=0))
     state_img = torch.Tensor(np.expand_dims(state_img, axis=0))
-    state_ori1 = torch.Tensor(np.expand_dims(state_ori1, axis=0))
-    state_ori1 = torch.Tensor(np.expand_dims(state_ori1, axis=0))
-    state_ori2 = torch.Tensor(np.expand_dims(state_ori2, axis=0))
-    state_ori2 = torch.Tensor(np.expand_dims(state_ori2, axis=0))
+    orient1 = torch.Tensor(np.expand_dims(orient1, axis=0))
+    orient1 = torch.Tensor(np.expand_dims(orient1, axis=0))
+    orient2 = torch.Tensor(np.expand_dims(orient2, axis=0))
+    orient2 = torch.Tensor(np.expand_dims(orient2, axis=0))
     state_dis = torch.Tensor(np.expand_dims(state_dis, axis=0))
     state_dis = torch.Tensor(np.expand_dims(state_dis, axis=0))
-    return self.actor(state_img,state_ori1,state_ori2,state_dis).cpu().data.numpy().flatten()
+    return self.actor(state_img,orient1,orient2,state_dis).cpu().data.numpy().flatten()
 
   def train(self, replay_buffer, iterations, batch_size=100, discount=0.99, tau=0.005, policy_noise=0.2, noise_clip=0.5, policy_freq=2):
     global it
     it += 1
 
     # Step 4: We sample a batch of transitions (s, s', a, r) from the memory
-    batch_states_img,batch_states_ori1,batch_states_ori2,batch_states_dis,\
-    batch_next_states_img,batch_next_states_ori1,batch_next_states_ori2,batch_next_states_dis,\
+    batch_image,batch_orient1,batch_orient2,batch_disp,\
+    batch_next,batch_next_orient1,batch_next_orient2,batch_next_disp,\
     batch_actions, batch_rewards, batch_dones = replay_buffer.sample(batch_size)
 
-    state_img = torch.Tensor(np.expand_dims(batch_states_img, axis=1))
-    state_ori1 = torch.Tensor(np.expand_dims(batch_states_ori1, axis=1))
-    state_ori2 = torch.Tensor(np.expand_dims(batch_states_ori2, axis=1))
-    state_dis = torch.Tensor(np.expand_dims(batch_states_dis, axis=1))
+    state_img = torch.Tensor(np.expand_dims(batch_image, axis=1))
+    orient1 = torch.Tensor(np.expand_dims(batch_orient1, axis=1))
+    orient2 = torch.Tensor(np.expand_dims(batch_orient2, axis=1))
+    state_dis = torch.Tensor(np.expand_dims(batch_disp, axis=1))
 
-    next_state_img = torch.Tensor(np.expand_dims(batch_next_states_img, axis=1))
-    next_state_ori1 = torch.Tensor(np.expand_dims(batch_next_states_ori1, axis=1))
-    next_state_ori2 = torch.Tensor(np.expand_dims(batch_next_states_ori2, axis=1))
-    next_state_dis = torch.Tensor(np.expand_dims(batch_next_states_dis, axis=1))
+    next_state_img = torch.Tensor(np.expand_dims(batch_next, axis=1))
+    next_state_ori1 = torch.Tensor(np.expand_dims(batch_next_orient1, axis=1))
+    next_state_ori2 = torch.Tensor(np.expand_dims(batch_next_orient2, axis=1))
+    next_state_dis = torch.Tensor(np.expand_dims(batch_next_disp, axis=1))
 
     action = torch.Tensor(np.expand_dims(batch_actions, axis=1))
     reward = torch.Tensor(batch_rewards)
@@ -206,7 +206,7 @@ class TD3(object):
     target_Q = reward + ((1 - done) * discount * target_Q).detach()
 
     # Step 10: The two Critic models take each the couple (s, a) as input and return two Q-values Q1(s,a) and Q2(s,a) as outputs
-    current_Q1, current_Q2 = self.critic(state_img,state_ori1,state_ori2,state_dis, action)
+    current_Q1, current_Q2 = self.critic(state_img,orient1,orient2,state_dis, action)
 
     # Step 11: We compute the loss coming from the two Critic models: Critic Loss = MSE_Loss(Q1(s,a), Qt) + MSE_Loss(Q2(s,a), Qt)
     critic_loss = F.mse_loss(current_Q1, target_Q) + F.mse_loss(current_Q2, target_Q)
@@ -218,7 +218,7 @@ class TD3(object):
 
     # Step 13: Once every two iterations, we update our Actor model by performing gradient ascent on the output of the first Critic model
     if it % policy_freq == 0:
-      actor_loss = -self.critic.Q1(state_img,state_ori1,state_ori2,state_dis, self.actor(state_img,state_ori1,state_ori2,state_dis)).mean()
+      actor_loss = -self.critic.Q1(state_img,orient1,orient2,state_dis, self.actor(state_img,orient1,orient2,state_dis)).mean()
       self.actor_optimizer.zero_grad()
       actor_loss.backward()
       self.actor_optimizer.step()
