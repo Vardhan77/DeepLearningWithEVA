@@ -33,11 +33,7 @@ Config.set('graphics', 'height', '660')
 ''' We set the parameters '''
 start_timesteps = 1000
 train_skip = 500
-debug_flag = False
-# debug_flag = True
-if(debug_flag):
-    start_timesteps = 50
-    train_skip = 50
+
 
 seed = 0 # Random seed number
 eval_freq = 5e3 # How often the evaluation step is performed (after how many timesteps)
@@ -50,8 +46,17 @@ tau = 0.005 # Target network update rate
 policy_noise = 0.2 # STD of Gaussian noise added to the actions for the exploration purposes
 noise_clip = 0.5 # Maximum value of the Gaussian noise added to the actions (policy)
 policy_freq = 2 # Number of iterations to wait before the policy network (Actor model) is updated
-action2rotation = [0,-3,3,-5,5]
 last_reward = 0
+sample_size = 500
+
+# debug_flag = False
+debug_flag = True
+
+if(debug_flag):
+    start_timesteps = 100
+    train_skip = 100
+    sample_size = 50
+    batch_size = 20
 
 ##################################################
 ''' We initialize the variables '''
@@ -64,12 +69,10 @@ episode_timesteps = 0
 ''' We set seeds and we get the necessary information
 on the states and actions in the chosen environment'''
 state_dim = 5
-action_dim = 5
-action_space_low = -5
-action_space_high = 5
+action_dim = 1
 
 # max_action = float(env.action_space.high[0])
-max_action = action_space_high
+max_action = 5
 
 # Initializing the last distance
 last_distance = 0
@@ -85,11 +88,11 @@ new_obs_ori = orientation
 
 ##################################################
 ''' We create the policy network (the Actor model) '''
-policy = TD3(state_dim, action_dim, max_action)
+policy = TD3(action_dim, max_action)
 
 ##################################################
 ''' We create the Experience Replay memory'''
-replay_buffer = ReplayBuffer()
+replay_buffer = ReplayBuffer(sample_size = sample_size)
 
 ##################################################
 im = CoreImage("./images/MASK1.png")
@@ -128,6 +131,7 @@ class Car(Widget):
         self.pos = Vector(*self.velocity) + self.pos
         self.rotation = rotation
         self.angle = self.angle + self.rotation
+        print(self.angle)
 
 
 # Creating the game class
@@ -149,37 +153,40 @@ class Game(Widget):
         self.car.move(rotation)
         distance = np.sqrt((self.car.x - goal_x)**2 + (self.car.y - goal_y)**2)
 
-        if sand[int(self.car.x),int(self.car.y)] > 0:
-            self.car.velocity = Vector(0.5, 0).rotate(self.car.angle)
-            # print(1, goal_x, goal_y, distance, int(self.car.x),int(self.car.y),
-            last_reward = -5
-        else: # otherwise
+        # if sand[int(self.car.x),int(self.car.y)] > 0:
+        #     self.car.velocity = Vector(0.5, 0).rotate(self.car.angle)
+        #     last_reward = -5
+        # else: # otherwise
+        if True:
             self.car.velocity = Vector(2, 0).rotate(self.car.angle)
-            last_reward = 10
-            # print(0, goal_x, goal_y, distance, int(self.car.x),int(self.car.y),
+            last_reward = -2
             if distance < last_distance:
-                last_reward = 15
+                last_reward = -0.2
 
         if self.car.x < 5:
             self.car.x = 5
             last_reward = -10
+            done = True
 
         if self.car.x > self.width - 5:
             self.car.x = self.width - 5
             last_reward = -10
+            done = True
 
         if self.car.y < 5:
             self.car.y = 5
             last_reward = -10
+            done = True
 
         if self.car.y > self.height - 5:
             self.car.y = self.height - 5
             last_reward = -10
+            done = True
 
         if distance < 25:
             done=True
             print("########GOAL REACHED########")
-            last_reward = 10
+            last_reward = 20
             if swap == 1:
                 print("########GOAL 1 REACHED########")
                 goal_x = 1420
@@ -256,7 +263,7 @@ class Game(Widget):
         action = 0
         # Before 1000 timesteps, we play random actions
         if total_timesteps < start_timesteps:
-            action = random.sample(action2rotation, 1)[0]
+            action = np.random.randint(-max_action, max_action)
 
         else: # After 10000 timesteps, we switch to the model
             if(total_timesteps%train_skip==0):
@@ -280,7 +287,7 @@ class Game(Widget):
         total_timesteps += 1
         episode_timesteps += 1
 
-        if(last_reward>-5):
+        if True:#(last_reward>-5):
             print("")
             print("**************")
             print("car location = ", self.car.x, " ", self.car.y)
