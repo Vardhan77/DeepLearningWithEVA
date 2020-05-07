@@ -1,23 +1,60 @@
-**THE ENDGAME PROJECT**
+# EndGameProject
 
-Refer to the code shared in Assignment 7. 
-Now use the same environment (car/map/sand/etc), and move that to TD3.
-Record your best attempt (it will be evaluated on how good your car's driving was in this video).
-Upload Video on YouTube, upload your code to GitHub along with Google-Colab code for A7Car+TD3. 
-Copy the Video and Code link to this assignment. 
-Done!
-  
- Write Up -> [sol.md](https://github.com/Vardhan77/DeepLearningWithEVA/blob/master/ProjectEndgame/Sol.md)
-  
-Video Link -> https://youtu.be/kJgPeYgygp8
+EngGameAssignment
+
+# I. Project Overview
+
+## Problem Statement
+
+For this project a map of a city with the roads is provided as an image. Also a car is provided. My task is:
+
+1. To go from any initialization to goal A
+
+2. To reach goal in minimum number of time steps.
+
+   In this project I have created a framework for Deep Reinforcement Learning.
+
+Youtube Video Link:
+https://youtu.be/kJgPeYgygp8
+
+Highlights of various activities I have done in the project
+
+- Used Twin Delayed Deep Deterministic (TD3) algorithm  for training
+- Used Convolutional Neural Network(CNN) based DNN model
+- For state space, mask is superimposed with a square car 
+- Random sampling of actions initially to fill up the replay buffer initially
+- Both Actor and Critic Models after each episode is stored
+- Based on Analytics  on collected Metrics for evaluation and training episodes I have chosen appropriate model for testing
+
+# II. Solution approach
+
+![](https://i.imgur.com/li7BMPW.png)
+
+In this project I have used Twin Delayed Deep Deterministic (TD3) algorithm (https://arxiv.org/pdf/1706.02275.pdf ) for training. 
+
+ It uses Actor Critic approach where Actor function specifies action given the current state of the environments. Critic value function specifies a signal (TD Error) to criticize the actions made by the actor.
+TD3 uses Actor and Critic principle. TD3 uses two Critic Networks and One Actor network 
+TD3 uses experience replay where experience tuples (S,A,R,S`) are added to replay buffer and are randomly sampled from the replay buffer so that samples are not correlated.  
+TD3 algorithm also uses separate target neural network for both Actor and Critic for each of the agent. 
+There are six neural networks used in T3D
+i.	Local network for Actor
+ii.	Target network for Actor
+iii.	Two networks for Critic
+iv.	Two Target network for Critic
+This algorithm uses time delay for updating Actor after a certain number of iterations. Also, Target Actor and Critic networks are updated periodically after certain number of iterations using Polyak averaging.
+Name Twin in the algorithm is used because there are two Critics used.
+
+### Actor Input: 
+
+The Actor Network takes Input as one element tuple: 
+80x80 numpy array representing  sand with superimposed square 
 
 
-EXPECTATION
 
-You are indeed using TD3.
+### Convolution Layer: 
 
-You are NOT using SENSORS.
+(8, 3x3, Relu, BN), (12, 3x3, Relu, BN), (16, 3x3, stride=2, Relu, BN), (8, 1x1, Relu, BN), (12, 3x3, Relu, BN), (16, 3x3, Relu, BN), (AdaptiveAveragePool), Flatten, Dense layer of latent dim 16 to 8 to action_dim* 
 
-You are using Conv Network (very very simple one) on your sand (so you can use MNIST type too) to get the sensory data. 
+### FC Layer:
 
-You have understood the problem and actually have tried to solve this problem. 
+There are three full connected layers. 
