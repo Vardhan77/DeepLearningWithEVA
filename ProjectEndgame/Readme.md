@@ -1,8 +1,6 @@
-# EndGameProject
+# ProjectEndGame
 
-EngGameAssignment
-
-# I. Project Overview
+# Overview
 
 ## Problem Statement
 
@@ -26,7 +24,7 @@ Highlights of various activities I have done in the project
 - Both Actor and Critic Models after each episode is stored
 - Based on Analytics  on collected Metrics for evaluation and training episodes I have chosen appropriate model for testing
 
-# II. Solution approach
+# Solution approach
 
 ![](https://i.imgur.com/li7BMPW.png)
 
