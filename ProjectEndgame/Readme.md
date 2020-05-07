@@ -1,4 +1,5 @@
- THE ENDGAME PROJECT  
+**THE ENDGAME PROJECT**
+
 Refer to the code shared in Assignment 7. 
 Now use the same environment (car/map/sand/etc), and move that to TD3.
 Record your best attempt (it will be evaluated on how good your car's driving was in this video).
