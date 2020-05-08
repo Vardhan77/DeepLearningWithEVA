@@ -13,7 +13,7 @@ For this project a map of a city with the roads is provided as an image. Also a 
    In this project I have created a framework for Deep Reinforcement Learning.
 
 Youtube Video Link:
-https://youtu.be/kJgPeYgygp8
+https://youtu.be/peHn63ZBOeg
 
 Highlights of various activities I have done in the project
 
